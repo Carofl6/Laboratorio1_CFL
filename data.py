@@ -1,24 +1,45 @@
-#%% Importo librerías 
 
+"""
+# -- --------------------------------------------------------------------------------------------------- -- #
+# -- project: A SHORT DESCRIPTION OF THE PROJECT                                                         -- #
+# -- script: data.py : python script for data collection                                                 -- #
+# -- author: CAROFL6                                                                      -- #
+# -- license: GPL-3.0 License                                                                            -- #
+# -- repository: YOUR REPOSITORY URL                                                                     -- #
+# -- --------------------------------------------------------------------------------------------------- -- #
+"""
+
+# Import libraries
 import pandas as pd
-import numpy as np
-import yfinance as yf
-import os
 
-inversion = 1000000 #Inversion inicial
-comision = .00125 #porcentaje de comision  
-filenames = os.listdir(r"C:\Users\Natalia Moreno\Documents\MYST\NAFTRAC_MENSUAL") #Archivo a utilizar 
+## ------------------------------------- Data collection functions ------------------------------------- ##
 
-#%%Funcion data_clean que regresa un DataFrame del 31 de enero con la informacion de excel limpia(data)
-#    y una lista de los tickers para ser descargados(tickers)
+def file_reading(path = "files/NAFTRAC_", skiprows = 2, naftrac_date = 20200131):
+    """
+    NAFTRAC files reading.
+    
+    """
+    
+    filepath = path + str(naftrac_date) + ".csv" 
+    df = pd.read_csv(filepath, skiprows = skiprows)
+    
+    return df.dropna(), naftrac_date
 
-def data_clean():
-    data = pd.read_csv(r"C:\Users\Natalia Moreno\Documents\MYST\NAFTRAC_MENSUAL\NAFTRAC_20200131.csv", skiprows=2)
-    data.drop(data.tail(2).index, inplace=True)
-    data.drop([10, 16], inplace=True)
-    data = data.replace('GFREGIOO', "RA").replace('MEXCHEM*', "ORBIA").replace("LIVEPOLC.1", "LIVEPOLC-1")
-    ticker_list = data["Ticker"].tolist()
-    tickers = [i.replace('*', '') + ".MX" for i in ticker_list]
-    return data, tickers
-
-dat, ticker = data_clean()
+def data_wrangling(df):
+    """
+    Data wrangling.
+    
+    """
+    
+    df["Peso (%)"] = df["Peso (%)"] / 100
+    [df.drop(labels = i, axis = 0, inplace = True) for i in range(len(df)) if df["Ticker"][i] in ["KOFL", "KOFUBL", "MXN", "BSMXB", "NMKA"]];
+    df.reset_index(drop = True, inplace = True)
+    df["Ticker"] = [stock.replace(".", "-").replace("*", "") + ".MX" for stock in list(df["Ticker"])]
+   
+    return df
+    
+    
+    
+    
+    
+    

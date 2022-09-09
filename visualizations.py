@@ -1,33 +1,48 @@
-#Importar librerias 
-import pandas as pd
-import plotly.graph_objects as go
 
-#%%Funcion com_vis que retorna una gráfica según el code que puede regresar 
-#   una visualización de ambas inversiones en su capital o en sus rendimientos
+"""
+# -- --------------------------------------------------------------------------------------------------- -- #
+# -- project: A SHORT DESCRIPTION OF THE PROJECT                                                         -- #
+# -- script: visualizations.py : python script with data visualization functions                         -- #
+# -- author: CAROFL6                                                                      -- #
+# -- license: GPL-3.0 License                                                                            -- #
+# -- repository: https://github.com/Carofl6/Laboratorio1_CFL                                                                    -- #
+# -- --------------------------------------------------------------------------------------------------- -- #
+"""
 
-def comp_vis(activa, pasiva, code):
-    ambas = pd.merge(activa, pasiva, on=activa.index)
-    ambas.columns = ["Timestamp", "capital inv_activa", "rend inv_activa", "rend_acum inv_activa",
-                     "capital inv_pasiva", "rend inv_pasiva", "rend_acum inv_pasiva"]
-    ambas.index = ambas["Timestamp"]
-    fig = go.Figure()
-    if code == "capital":
-        caps = ambas.loc[:, ["capital inv_activa", "capital inv_pasiva"]]
-        fig.add_trace(go.Scatter(x=caps.index, y=caps["capital inv_activa"],mode='lines',name='inv_activa'))
-        fig.add_trace(go.Scatter(x=caps.index, y=caps["capital inv_pasiva"], mode='lines', name='inv_pasiva'))
-        fig.update_layout(title='Capital inversiones')
-    elif code == "rendimientos":
-        ret = ambas.loc[:, ["rend inv_activa", "rend inv_pasiva"]]
-        fig.add_trace(go.Scatter(x=ret.index, y=ret["rend inv_activa"],mode='lines',name='inv_activa'))
-        fig.add_trace(go.Scatter(x=ret.index, y=ret["rend inv_pasiva"], mode='lines', name='inv_pasiva'))
-        fig.update_layout(title='Rendimiento inversiones')
-    fig.show()
+# Import libraries
+import plotly.express as px
 
-#%%Funcion pie que da la visualización de un pie chart
+## -------------------------------------- Visualization functions -------------------------------------- ##
 
-def pie(x, y):
-    fig = go.Figure(data=[go.Pie(labels=x, values=y)])
-    fig.update_traces(textposition='inside')
-    fig.update_layout(title='Ponderaciones 31 de enero 2018 NAFTRAC')
-    fig.show()
+def pie_chart(df):
+    """
+    Interactive pie charts.
+    
+    """
+    
+    # Stock Weightings
+    fig1 = px.pie(df, values = "Peso (%)", names = "Ticker", title = "NAFTRAC Stock Weightings (%)")
+    
+    # Sector Weightings
+    df = df.groupby("Sector").sum()
+    if df["Peso (%)"].sum() != 1:
+        df.loc["Efectivo", :] = [1 - df["Peso (%)"].sum(), 0]
+    
+    df.reset_index(inplace = True)
+    fig2 = px.pie(df, values = "Peso (%)", names = "Sector", title = "NAFTRAC Sector Weightings (%)")
+    
+    return fig1, fig2
+
+def time_series(df, title):
+    """
+    Interactive time series plots.
+    
+    """
+    
+    fig = px.line(x = df.index, y = df.Capital, title = title, 
+                  labels={"x": "Date", "y" : "Mexican Pesos MXN"})
+    
+    return fig
+
+
 
